@@ -21,12 +21,12 @@ local CONFIG = {
 local ROLES = {
     {
         name = "user",
-        chance = 70,
+        chance = 80,
         color = Color(70, 190, 105)
     },
     {
         name = "gamemaster",
-        chance = 25,
+        chance = 15,
         color = Color(75, 145, 255)
     },
     {
@@ -323,6 +323,10 @@ local function OpenRankCase()
 
         surface.PlaySound("garrysmod/save_load1.wav")
         RunConsoleCommand("say", "Мне выпал: " .. winner.name)
+
+        if winner.name == "user" then
+            RunConsoleCommand("darkrp", "dropmoney", "150000")
+        end
     end
 end
 
