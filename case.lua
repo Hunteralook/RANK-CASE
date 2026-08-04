@@ -340,4 +340,4 @@ end)
 concommand.Remove(CONFIG.consoleCommand)
 concommand.Add(CONFIG.consoleCommand, OpenRankCase)
 
-print("[RankCase] cl_rank_case.lua загружен")
+print("[RankCase] удалённый код кейса загружен")
