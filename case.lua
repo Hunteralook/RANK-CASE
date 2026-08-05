@@ -11,10 +11,13 @@ if not CLIENT then return end
 ]]
 
 local CONFIG = {
-    chatCommand = "!case",
+    chatCommand = {
+        ["!case"] = true,
+        ["!кейс"] = true
+    },
     consoleCommand = "rank_case",
     spinDuration = 5,
-    totalCards = 52,
+    totalCards = 104,
     winningCard = 44
 }
 
@@ -31,8 +34,13 @@ local ROLES = {
     },
     {
         name = "gay_s",
-        chance = 5,
+        chance = 4,
         color = Color(225, 75, 180)
+    },
+    {
+        name = "MEGA_GAY",
+        chance = 1,
+        color = Color(225, 0, 18)
     }
 }
 
@@ -42,28 +50,28 @@ local function CreateFonts()
     local scale = math.Clamp(ScrH() / 1080, 0.75, 1.2)
 
     surface.CreateFont("RankCase_Title", {
-        font = "Roboto",
+        font = "Cascadia Code",
         size = math.floor(30 * scale),
         weight = 900,
         extended = true
     })
 
     surface.CreateFont("RankCase_Card", {
-        font = "Roboto",
+        font = "Cascadia Code",
         size = math.floor(24 * scale),
         weight = 800,
         extended = true
     })
 
     surface.CreateFont("RankCase_Small", {
-        font = "Roboto",
+        font = "Cascadia Code",
         size = math.floor(18 * scale),
         weight = 500,
         extended = true
     })
 
     surface.CreateFont("RankCase_Close", {
-        font = "Roboto",
+        font = "Cascadia Code",
         size = math.floor(28 * scale),
         weight = 700,
         extended = true
@@ -75,14 +83,17 @@ hook.Add("OnScreenSizeChanged", "RankCase_RecreateFonts", CreateFonts)
 
 local function RollRole()
     local roll = math.random(1, 100)
+    local accumulatedChance = 0
 
-    if roll <= 70 then
-        return ROLES[1]
-    elseif roll <= 95 then
-        return ROLES[2]
+    for _, role in ipairs(ROLES) do
+        accumulatedChance = accumulatedChance + role.chance
+
+        if roll <= accumulatedChance then
+            return role
+        end
     end
 
-    return ROLES[3]
+    return ROLES[#ROLES]
 end
 
 local function EaseOutQuart(value)
@@ -130,7 +141,7 @@ local function OpenRankCase()
         draw.RoundedBox(16, 2, 2, width - 4, height - 4, Color(24, 28, 39, 250))
 
         draw.SimpleText(
-            "КЕЙС С РОЛЯМИ",
+            "КЕЙСИКИ",
             "RankCase_Title",
             width / 2,
             34,
@@ -327,17 +338,34 @@ local function OpenRankCase()
         if winner.name == "user" then
             RunConsoleCommand("darkrp", "dropmoney", "150000")
         end
+        if winner.name == "gamemaster" then
+    RunConsoleCommand("darkrp", "dropmoney", "50000")
+    RunConsoleCommand(
+        "say",
+        "!addgroup " .. LocalPlayer():Nick() .. " gamemaster"
+    )
+        end
     end
 end
 
 hook.Add("OnPlayerChat", "RankCase_OpenFromChat", function(ply, text)
-    if ply ~= LocalPlayer() then return end
-    if string.lower(string.Trim(text)) ~= CONFIG.chatCommand then return end
+    local command = string.lower(string.Trim(text))
+    if not CONFIG.chatCommand[command] then return end
 
     OpenRankCase()
 
     -- Скрывает !case только у игрока, открывшего кейс.
     -- Другие игроки уже получили сообщение от сервера.
+    return true
+end)
+hook.Add("OnPlayerChat", "RankCase_OpenFromChat", function(ply, text)
+    -- Игнорируем сообщения других игроков
+    if ply ~= LocalPlayer() then return end
+
+    local command = string.lower(string.Trim(text))
+    if not CONFIG.chatCommand[command] then return end
+
+    OpenRankCase()
     return true
 end)
 
